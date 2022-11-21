@@ -1,3 +1,4 @@
+import 'package:based_bml/card_options.dart';
 import 'package:based_bml/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,26 +12,44 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
+  bool isExtended = true;
   double balance = 2100.00;
   int currentCardIdx = 0;
   String cardNumber = '4213123412341297';
   final cardCount = 3;
   final formatCurrency = NumberFormat.simpleCurrency(name: 'MVR');
-  late PageController cardPageController;
+  late PageController _cardPageController;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    cardPageController = PageController(
+    _cardPageController = PageController(
       initialPage: currentCardIdx,
       viewportFraction: 0.85,
     );
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+      const delta = 10;
+      if (maxScroll - currentScroll <= delta || currentScroll <= delta) {
+        setState(() {
+          isExtended = true;
+        });
+      } else {
+        setState(() {
+          isExtended = false;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    cardPageController.dispose();
+    _cardPageController.dispose();
+    _scrollController.dispose();
   }
 
   Widget _header(BuildContext context) {
@@ -59,12 +78,16 @@ class _WalletScreenState extends State<WalletScreen> {
                 'Welcome Back',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
+                  fontWeight: FontWeight.w500,
                   height: 0,
                 ),
               ),
               const Text(
                 'Shadhaan',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -73,74 +96,113 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _bankCard() {
-    return Card(
-      margin: const EdgeInsets.all(8),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      color: Theme.of(context).colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+  Widget _bankCard(int index) {
+    bool selected = index == currentCardIdx;
+
+    return Hero(
+      tag: 'BankCard$index',
+      child: Card(
+        margin: const EdgeInsets.all(8),
+        elevation: 0,
+        child: AnimatedContainer(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: selected
+                ? Theme.of(context).colorScheme.primaryContainer
+                : Theme.of(context).colorScheme.surfaceVariant,
+          ),
+          duration: const Duration(milliseconds: 200),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              splashColor:
+                  Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+              onTap: selected
+                  ? () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CardOptionsScreen(currentCardIdx: currentCardIdx),
+                        ),
+                      );
+                    }
+                  : () => _cardPageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOutCirc,
+                      ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      formatCurrency.currencySymbol,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        height: 0,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              formatCurrency.currencySymbol,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                height: 0,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              formatCurrency.format(balance).replaceAll(
+                                  formatCurrency.currencySymbol, ''),
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                height: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'DEBIT',
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      formatCurrency
-                          .format(balance)
-                          .replaceAll(formatCurrency.currencySymbol, ''),
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        height: 0,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '**** ${cardNumber.substring(cardNumber.length - 4)} | 9/23',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Fira Code',
+                              ),
+                            ),
+                          ],
+                        ),
+                        SvgPicture.asset(
+                          'assets/visa_logo.svg',
+                          // 'assets/mastercard_logo.svg',
+                          width: 60,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const Text(
-                  'DEBIT',
-                  style: TextStyle(),
-                ),
-              ],
+              ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      '**** ${cardNumber.substring(cardNumber.length - 4)} | 9/23',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Fira Code',
-                      ),
-                    ),
-                  ],
-                ),
-                SvgPicture.asset(
-                  'assets/mastercard_logo.svg',
-                  width: 60,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -149,19 +211,17 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget _cardCarousel() {
     return Column(
       children: [
-        AspectRatio(
-          aspectRatio: 1.8,
+        SizedBox(
+          height: 230,
           child: PageView.builder(
-            controller: cardPageController,
+            controller: _cardPageController,
             onPageChanged: ((value) {
               setState(() {
                 currentCardIdx = value;
               });
             }),
             itemCount: cardCount,
-            itemBuilder: ((context, index) {
-              return _bankCard();
-            }),
+            itemBuilder: (context, index) => _bankCard(index),
           ),
         ),
         const SizedBox(height: 8),
@@ -177,10 +237,8 @@ class _WalletScreenState extends State<WalletScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         color: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).brightness == Brightness.light
-                ? Theme.of(context).colorScheme.onPrimaryContainer
-                : Theme.of(context).colorScheme.onPrimary,
+            ? Theme.of(context).colorScheme.onPrimaryContainer
+            : Theme.of(context).colorScheme.surfaceVariant,
         shape: BoxShape.circle,
       ),
     );
@@ -204,26 +262,24 @@ class _WalletScreenState extends State<WalletScreen> {
         toolbarHeight: 0,
         scrolledUnderElevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _header(context),
-              const SizedBox(height: 56),
-              _cardCarousel(),
-              const SizedBox(height: 12),
-            ],
+      body: Scrollbar(
+        controller: _scrollController,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _header(context),
+                const SizedBox(height: 32),
+                _cardCarousel(),
+                const SizedBox(height: 2000),
+              ],
+            ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        label: const Text('Transfer'),
-        icon: const Icon(Icons.send_outlined),
-        onPressed: () {},
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

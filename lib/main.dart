@@ -16,12 +16,26 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: ColorConstants.primary,
+        colorSchemeSeed: ColorConstants.bmlRed,
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: ColorConstants.lightColorScheme.primary,
+            ),
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: ColorConstants.primary,
+        colorSchemeSeed: ColorConstants.bmlRed,
         brightness: Brightness.dark,
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: ColorConstants.darkColorScheme.primary,
+            ),
+          ),
+        ),
       ),
       home: const HomeScreen(),
     );

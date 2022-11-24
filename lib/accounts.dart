@@ -11,15 +11,19 @@ class _AccountsScreenState extends State<AccountsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: const [
-            SizedBox(
-              width: double.infinity,
-              height: 2000,
-            )
-          ],
+      appBar: AppBar(
+        title: const Text('Accounts'),
+      ),
+      body: Scrollbar(
+        child: SingleChildScrollView(
+          child: Column(
+            children: const [
+              ListTile(
+                title: Text('Bruh'),
+              ),
+              SizedBox(height: 2000),
+            ],
+          ),
         ),
       ),
     );

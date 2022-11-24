@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:based_bml/accounts.dart';
 import 'package:based_bml/wallet.dart';
 import 'package:based_bml/settings.dart';
@@ -21,7 +22,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navItems[navIdx],
+      body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
+            FadeThroughTransition(
+          animation: primaryAnimation,
+          secondaryAnimation: secondaryAnimation,
+          child: child,
+        ),
+        child: navItems[navIdx],
+      ),
       bottomNavigationBar: NavigationBar(
         // surfaceTintColor: Theme.of(context).backgroundColor,
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,

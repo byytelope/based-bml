@@ -11,7 +11,8 @@ class WalletScreen extends StatefulWidget {
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen> {
+class _WalletScreenState extends State<WalletScreen>
+    with TickerProviderStateMixin {
   bool isExtended = true;
   double balance = 2100.00;
   int currentCardIdx = 0;
@@ -26,7 +27,7 @@ class _WalletScreenState extends State<WalletScreen> {
     super.initState();
     _cardPageController = PageController(
       initialPage: currentCardIdx,
-      viewportFraction: 0.85,
+      viewportFraction: 1,
     );
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -54,9 +55,10 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Widget _header(BuildContext context) {
     return Container(
+      height: kToolbarHeight,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             height: 42,
@@ -73,7 +75,9 @@ class _WalletScreenState extends State<WalletScreen> {
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 4),
               Text(
                 'Welcome Back',
                 style: TextStyle(
@@ -101,8 +105,12 @@ class _WalletScreenState extends State<WalletScreen> {
 
     return Hero(
       tag: 'BankCard$index',
+      transitionOnUserGestures: true,
       child: Card(
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         elevation: 0,
         child: AnimatedContainer(
           decoration: BoxDecoration(
@@ -147,17 +155,27 @@ class _WalletScreenState extends State<WalletScreen> {
                           children: [
                             Text(
                               formatCurrency.currencySymbol,
-                              style: const TextStyle(
-                                fontSize: 18,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontFamily: 'Fira Code',
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                                 height: 0,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               formatCurrency.format(balance).replaceAll(
-                                  formatCurrency.currencySymbol, ''),
-                              style: const TextStyle(
-                                fontSize: 26,
+                                    formatCurrency.currencySymbol,
+                                    '',
+                                  ),
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontFamily: 'Fira Code',
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                                 fontWeight: FontWeight.bold,
                                 height: 0,
                               ),
@@ -167,6 +185,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         Text(
                           'DEBIT',
                           style: TextStyle(
+                            fontFamily: 'Fira Code',
                             color: Theme.of(context)
                                 .colorScheme
                                 .onPrimaryContainer,
@@ -182,19 +201,26 @@ class _WalletScreenState extends State<WalletScreen> {
                           children: [
                             Text(
                               '**** ${cardNumber.substring(cardNumber.length - 4)} | 9/23',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                                 fontFamily: 'Fira Code',
                               ),
                             ),
                           ],
                         ),
-                        SvgPicture.asset(
-                          'assets/visa_logo.svg',
-                          // 'assets/mastercard_logo.svg',
-                          width: 60,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 40),
+                          child: SvgPicture.asset(
+                            'assets/visa_logo.svg',
+                            // 'assets/mastercard_logo.svg',
+                            alignment: Alignment.bottomRight,
+                            width: 60,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          ),
                         ),
                       ],
                     ),
@@ -212,9 +238,10 @@ class _WalletScreenState extends State<WalletScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 230,
+          height: 262,
           child: PageView.builder(
             controller: _cardPageController,
+            padEnds: false,
             onPageChanged: ((value) {
               setState(() {
                 currentCardIdx = value;
@@ -231,7 +258,9 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Widget _pageIndicator(bool isActive) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutQuad,
       height: 8,
       width: 8,
       margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -255,6 +284,51 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
+  Widget _buttons() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
+              onPressed: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.qr_code_scanner_outlined),
+                  SizedBox(width: 8),
+                  Text('Scan QR'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
+              onPressed: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.send_outlined),
+                  SizedBox(width: 8),
+                  Text('Send'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -272,8 +346,9 @@ class _WalletScreenState extends State<WalletScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _header(context),
-                const SizedBox(height: 32),
                 _cardCarousel(),
+                const SizedBox(height: 16),
+                _buttons(),
                 const SizedBox(height: 2000),
               ],
             ),

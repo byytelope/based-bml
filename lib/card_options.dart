@@ -1,3 +1,4 @@
+import 'package:based_bml/util/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -10,15 +11,38 @@ class CardOptionsScreen extends StatefulWidget {
   State<CardOptionsScreen> createState() => _CardOptionsScreenState();
 }
 
-class _CardOptionsScreenState extends State<CardOptionsScreen> {
+class _CardOptionsScreenState extends State<CardOptionsScreen>
+    with TickerProviderStateMixin {
   bool freezeCard = false;
   bool defaultCard = true;
   double balance = 2100.00;
   String cardNumber = '4213123412341297';
   final formatCurrency = NumberFormat.simpleCurrency(name: 'MVR');
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    )..forward();
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutQuad,
+    );
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   Widget _bankCard() {
     return Hero(
+      transitionOnUserGestures: true,
       tag: 'BankCard${widget.currentCardIdx}',
       child: Card(
         margin: const EdgeInsets.all(16),
@@ -43,8 +67,11 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
                     children: [
                       Text(
                         formatCurrency.currencySymbol,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Fira Code',
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           height: 0,
                         ),
                       ),
@@ -53,8 +80,11 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
                         formatCurrency
                             .format(balance)
                             .replaceAll(formatCurrency.currencySymbol, ''),
-                        style: const TextStyle(
-                          fontSize: 26,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontFamily: 'Fira Code',
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.bold,
                           height: 0,
                         ),
@@ -64,31 +94,58 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
                   Text(
                     'DEBIT',
                     style: TextStyle(
+                      fontFamily: 'Fira Code',
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      Helpers.parseCardNum(cardNumber),
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontFamily: 'Fira Code',
+                        letterSpacing: 3,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        '**** ${cardNumber.substring(cardNumber.length - 4)} | 9/23',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Fira Code',
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          '9/23',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontFamily: 'Fira Code',
+                          ),
+                        ),
+                      ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 40),
+                        child: SvgPicture.asset(
+                          alignment: Alignment.bottomRight,
+                          'assets/visa_logo.svg',
+                          // 'assets/mastercard_logo.svg',
+                          width: 60,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ],
-                  ),
-                  SvgPicture.asset(
-                    'assets/visa_logo.svg',
-                    // 'assets/mastercard_logo.svg',
-                    width: 60,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                 ],
               ),
@@ -105,31 +162,37 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Tooltip(
-              message: 'Pay',
-              child: OutlinedButton(
-                onPressed: () {},
-                child: const Icon(Icons.send_outlined),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
+              onPressed: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.password_outlined),
+                  SizedBox(width: 8),
+                  Text('Change pin'),
+                ],
               ),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Tooltip(
-              message: 'Change pin',
-              child: OutlinedButton(
-                onPressed: () {},
-                child: const Icon(Icons.password_outlined),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Tooltip(
-              message: 'Block',
-              child: OutlinedButton(
-                onPressed: () {},
-                child: const Icon(Icons.block_outlined),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
+              onPressed: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.block_outlined),
+                  SizedBox(width: 8),
+                  Text('Block card'),
+                ],
               ),
             ),
           ),
@@ -140,32 +203,16 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
 
   Widget _list() {
     return ListView(
+      physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       children: [
         ListTile(
-          onTap: () {},
-          iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          leading: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.ac_unit_outlined),
-            ],
-          ),
-          title: const Text('Freeze'),
-          subtitle: const Text('Tap to freeze or unfreeze your card'),
-          trailing: Switch.adaptive(
-            activeColor: Theme.of(context).primaryColor,
-            value: freezeCard,
-            onChanged: (value) {
-              setState(() {
-                freezeCard = value;
-              });
-            },
-          ),
-        ),
-        ListTile(
           isThreeLine: true,
-          onTap: () {},
+          onTap: () {
+            setState(() {
+              defaultCard = !defaultCard;
+            });
+          },
           iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
           leading: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -176,11 +223,36 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
           title: const Text('Default Card'),
           subtitle: const Text('Use this card to make payments by default'),
           trailing: Switch.adaptive(
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: Theme.of(context).colorScheme.primary,
             value: defaultCard,
             onChanged: (value) {
               setState(() {
                 defaultCard = value;
+              });
+            },
+          ),
+        ),
+        ListTile(
+          onTap: () {
+            setState(() {
+              freezeCard = !freezeCard;
+            });
+          },
+          iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.ac_unit_outlined),
+            ],
+          ),
+          title: const Text('Freeze'),
+          subtitle: const Text('Tap to freeze or unfreeze your card'),
+          trailing: Switch.adaptive(
+            activeColor: Theme.of(context).colorScheme.primary,
+            value: freezeCard,
+            onChanged: (value) {
+              setState(() {
+                freezeCard = value;
               });
             },
           ),
@@ -195,7 +267,7 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
       appBar: AppBar(
         title: const Text('Card Options'),
         leading: IconButton(
-          icon: Icon(Icons.adaptive.arrow_back),
+          icon: Icon(Icons.adaptive.arrow_back_outlined),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -209,7 +281,6 @@ class _CardOptionsScreenState extends State<CardOptionsScreen> {
               _buttons(),
               const SizedBox(height: 16),
               _list(),
-              const SizedBox(height: 2000),
             ],
           ),
         ),
